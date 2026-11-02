@@ -75,7 +75,9 @@ func applyOverallProjection(row InsightsRow, intervals []domain.MonitorHealthInt
 			}
 		}
 		if interval.Status == domain.StatusDown && !start.Before(from) && start.Before(to) {
-			outages++
+			if !havePrevious || previous != domain.StatusDown {
+				outages++
+			}
 		}
 		if havePrevious && previous != interval.Status {
 			change := start
