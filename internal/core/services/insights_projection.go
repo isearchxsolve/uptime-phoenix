@@ -74,7 +74,11 @@ func applyOverallProjection(row InsightsRow, intervals []domain.MonitorHealthInt
 				durations.Unknown += dur
 			}
 		}
-		if interval.Status == domain.StatusDown && !start.Before(from) && start.Before(to) {
+		// Count an outage only when entering DOWN: the first bucket of a run of
+		// consecutive DOWN buckets. Every subsequent DOWN bucket of the same
+		// continuous outage is part of that outage, not a new one. An outage that
+		// already started before `from` (start < from) is an open outage, not new.
+		if interval.Status == domain.StatusDown && !start.Before(from) && start.Before(to) && (!havePrevious || previous != domain.StatusDown) {
 			outages++
 		}
 		if havePrevious && previous != interval.Status {
